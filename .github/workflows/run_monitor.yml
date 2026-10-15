@@ -1,0 +1,35 @@
+name: NDX Monitor
+run-name: 纳指100每日监控
+on:
+  schedule:
+    # UTC 22点 = 北京时间早上6点
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: 设置Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 安装依赖
+        run: pip install yfinance
+      - name: 运行监控脚本
+        env:
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PWD: ${{ secrets.EMAIL_PWD }}
+          EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
+        run: python ndx_monitor.py
+      - name: 提交更新后的高点文件
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ndx_high.json
+          git commit -m "auto update ndx high" || echo "无更新，无需提交"
+          git push
