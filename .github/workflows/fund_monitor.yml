@@ -1,0 +1,43 @@
+name: 纳指基金监控任务
+# cron UTC时间！UTC比北京时间慢8小时
+# cron: "0 1 * * *" → UTC 01:00 = 北京时间 09:00，每天早上9点自动运行
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  # 允许手动点击按钮触发测试运行
+  workflow_dispatch:
+
+jobs:
+  run-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖包
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install chromium
+
+      - name: 执行监控脚本
+        env:
+          MAIL_SENDER: ${{ secrets.MAIL_SENDER }}
+          MAIL_AUTH_CODE: ${{ secrets.MAIL_AUTH_CODE }}
+          MAIL_RECEIVER: ${{ secrets.MAIL_RECEIVER }}
+        run: python fund_monitor.py
+
+      - name: 提交快照文件回仓库
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add fund_snapshot.json
+          git commit -m "更新基金快照(自动任务)" || echo "快照无变化无需提交"
+          git push
