@@ -78,13 +78,18 @@ def get_fund_quota_info(fund_code):
     url = f"https://fundf10.eastmoney.com/jjfl_{fund_code}.html"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://fundf10.eastmoney.com/"
+        "Referer": "https://fundf10.eastmoney.com/",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
     }
     for retry in range(MAX_RETRY):
         try:
             resp = requests.get(url, headers=headers, timeout=12)
+            print(f"基金{fund_code} HTTP状态码: {resp.status_code}")
             resp.encoding = "utf-8"
             html_text = resp.text
+            # 打印页面前500字符，调试看返回内容
+            print(f"基金{fund_code}页面片段：{html_text[:500]}")
             # 去掉换行符、连续空白，消除换行干扰
             html_text = re.sub(r'\s+', ' ', html_text)
 
@@ -154,7 +159,7 @@ def main():
                 if old_quota != new_quota:
                     change_list.append(f"📌【限额调整】{name}({code})：{old_quota} → {new_quota}")
         # 每只基金抓取完随机延时，防止反爬
-        time.sleep(random.uniform(0.8,2.2))
+        time.sleep(random.uniform(1.2,2.5))
 
     # ========== 组装邮件正文 ==========
     mail_sections = []
