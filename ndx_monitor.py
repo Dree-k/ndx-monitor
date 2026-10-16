@@ -79,7 +79,7 @@ def main():
 当前回撤：{drawdown:.2%}
 已触发加仓档位：{trigger_text}
 ⚠️ 收到提醒后操作检查清单：
-1. 打开集思录，查看场内纳指ETF溢价率
+1. 打开雪球，查看场内纳指ETF溢价率
 2. 溢价＜5%，才考虑买入；溢价>5%，只记录，不买入！
 """
         # format参数增加 trigger_text，删掉 trigger_list
