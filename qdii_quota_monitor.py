@@ -85,13 +85,15 @@ def get_fund_quota_info(fund_code):
             resp = requests.get(url, headers=headers, timeout=12)
             resp.encoding = "utf-8"
             html_text = resp.text
+            # 去掉换行符、连续空白，消除换行干扰
+            html_text = re.sub(r'\s+', ' ', html_text)
 
-            # 正则提取申购状态
-            status_pattern = re.search(r'申购状态[:：](.*?)(?=赎回状态)', html_text)
+            # 新正则：申购状态
+            status_pattern = re.search(r'申购状态[:：]\s*([^<]+?)\s*<', html_text)
             status = status_pattern.group(1).strip() if status_pattern else "未知"
 
-            # 正则提取日累计申购限额
-            quota_pattern = re.search(r'日累计申购限额[:：](.*?)(?=</td>)', html_text)
+            # 新正则：日累计申购限额
+            quota_pattern = re.search(r'日累计申购限额[:：]\s*([^<]+?)\s*<', html_text)
             quota = quota_pattern.group(1).strip() if quota_pattern else "未知"
 
             return {"status": status, "quota": quota}
